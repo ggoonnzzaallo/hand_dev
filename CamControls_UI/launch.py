@@ -395,7 +395,7 @@ def ensure_ahcontrol_built() -> None:
 
 
 def prepare_dataflow(mode: str) -> str:
-    """Return dataflow path (relative to Demo/) for dora build/run."""
+    """Return dataflow path (relative to CamControls_UI/) for dora build/run."""
     base_name = MODES[mode]
     camera_index = launch_camera.read_camera_index()
     src = (DEMO_DIR / base_name).read_text(encoding="utf-8")
@@ -424,7 +424,7 @@ def prepare_dataflow(mode: str) -> str:
         )
         launch_serial.write_serial_current(serial_cfg)
 
-    # Must live in Demo/ (not out/) so dora resolves HandTracking/, WebUI/, etc. correctly.
+    # Must live in CamControls_UI/ (not out/) so dora resolves HandTracking/, WebUI/, etc. correctly.
     runtime_name = base_name.replace(".yml", "_runtime.yml")
     runtime_path = DEMO_DIR / runtime_name
     runtime_path.write_text(patched, encoding="utf-8")

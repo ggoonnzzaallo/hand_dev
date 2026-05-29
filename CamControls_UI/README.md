@@ -37,8 +37,6 @@ See [GONZALO_NOTES.md](GONZALO_NOTES.md) for troubleshooting, motor IDs, and MuJ
 
 Motor layout and `AHControl` tools: see [AHControl/README.md](AHControl/README.md) and [docs/](docs/).
 
-Upstream hand CAD/firmware repo: [Pollen Robotics AmazingHand](https://github.com/pollen-robotics/AmazingHand) (this project is a standalone control UI extracted from its `Demo/` folder).
-
 ## Cleanup
 
 ```bash
