@@ -1,0 +1,7 @@
+.DS_Store
+CamControls_UI/.venv/
+CamControls_UI/target/
+CamControls_UI/out/
+CamControls_UI/__pycache__/
+CamControls_UI/*.egg-info/
+CamControls_UI/dataflow_tracking_*_runtime.yml

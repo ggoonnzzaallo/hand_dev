@@ -1,0 +1,45 @@
+nodes:
+  - id: web_ui
+    build: pip install -e WebUI
+    path: WebUI/WebUI/main.py
+    args: --hands both
+    inputs:
+      preview_jpeg: hand_tracker/preview_jpeg
+    outputs:
+      - set_camera
+      - launch_right
+      - launch_left
+
+  - id: hand_tracker
+    build: pip install -e HandTracking
+    path: HandTracking/HandTracking/main.py
+    args: --camera 0
+    inputs:
+      tick: dora/timer/millis/50
+      set_camera: web_ui/set_camera
+    outputs:
+      - r_hand_pos
+      - l_hand_pos
+      - preview_jpeg
+
+  - id: r_hand_simulation
+    build: pip install -e AHSimulation
+    path: AHSimulation/AHSimulation/mj_mink_right.py
+    inputs:
+      r_hand_pos: hand_tracker/r_hand_pos
+      launch_viewer: web_ui/launch_right
+      tick: dora/timer/millis/2
+      tick_ctrl: dora/timer/millis/10
+    outputs:
+      - mj_joints_pos
+
+  - id: l_hand_simulation
+    build: pip install -e AHSimulation
+    path: AHSimulation/AHSimulation/mj_mink_left.py
+    inputs:
+      l_hand_pos: hand_tracker/l_hand_pos
+      launch_viewer: web_ui/launch_left
+      tick: dora/timer/millis/2
+      tick_ctrl: dora/timer/millis/10
+    outputs:
+      - mj_joints_pos

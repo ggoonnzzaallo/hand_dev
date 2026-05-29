@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CamControls UI</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      margin: 0;
+      padding: 1.5rem;
+      background: #121212;
+      color: #e8e8e8;
+      max-width: 900px;
+      margin-inline: auto;
+    }
+    h1 { font-size: 1.25rem; font-weight: 600; margin: 0 0 1rem; }
+    h2 {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #9a9a9a;
+      margin: 0 0 0.5rem;
+    }
+    section { margin-bottom: 1.25rem; }
+    .section-sub {
+      font-size: 0.75rem;
+      color: #666;
+      margin: 0 0 0.65rem;
+      line-height: 1.4;
+    }
+    section.section-muted {
+      opacity: 0.72;
+    }
+    .preview {
+      background: #000;
+      border-radius: 8px;
+      overflow: hidden;
+      line-height: 0;
+      margin-bottom: 1rem;
+      border: 1px solid #2a2a2a;
+    }
+    .preview img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: center;
+      margin-bottom: 0.75rem;
+    }
+    label { font-size: 0.875rem; color: #9a9a9a; }
+    select {
+      padding: 0.4rem 0.6rem;
+      border-radius: 6px;
+      border: 1px solid #3a3a3a;
+      background: #1e1e1e;
+      color: #e8e8e8;
+      min-width: 200px;
+      max-width: 100%;
+      flex: 1;
+    }
+    .serial-hint {
+      font-size: 0.75rem;
+      color: #666;
+      margin: 0 0 0.5rem;
+      line-height: 1.4;
+    }
+    .serial-probe {
+      font-size: 0.75rem;
+      color: #9a9a9a;
+      margin: 0.25rem 0 0.75rem 0;
+      padding: 0.5rem 0.65rem;
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 6px;
+      line-height: 1.45;
+      white-space: pre-wrap;
+    }
+    .serial-probe.ok { border-color: #2d5a4a; color: #9ab89a; }
+    .serial-probe.warn { border-color: #5a4a2d; color: #b8a67a; }
+    .serial-probe.err { border-color: #5a2d2d; color: #b89a9a; }
+    .buttons { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    button {
+      padding: 0.55rem 1rem;
+      border: 1px solid #3a3a3a;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      cursor: pointer;
+      background: #2d6a6a;
+      color: #f0f0f0;
+    }
+    button:hover:not(:disabled) { background: #357878; }
+    button:disabled {
+      background: #1e1e1e;
+      border-color: #2a2a2a;
+      color: #666;
+      cursor: not-allowed;
+    }
+    button.secondary {
+      background: #1e1e1e;
+      border-color: #3a3a3a;
+    }
+    button.secondary:hover:not(:disabled) {
+      background: #2a2a2a;
+    }
+    button.active {
+      background: #1e1e1e;
+      border-color: #2d6a6a;
+      color: #8ec4c4;
+    }
+    button.danger {
+      background: #4a2828;
+      border-color: #6a3838;
+      color: #e8c4c4;
+    }
+    button.danger:hover:not(:disabled) {
+      background: #5a3232;
+    }
+    .status {
+      font-size: 0.8rem;
+      color: #7a9a7a;
+      min-height: 1.2em;
+    }
+    .hint {
+      font-size: 0.75rem;
+      color: #666;
+      margin-top: 0.75rem;
+      line-height: 1.5;
+    }
+    ul.hint {
+      margin: 0 0 1rem;
+      padding-left: 1.25rem;
+    }
+    ul.hint li { margin-bottom: 0.35rem; }
+    .warn { color: #b89a6a; }
+    .footer {
+      font-size: 0.7rem;
+      color: #666;
+      margin-top: 1rem;
+    }
+    .footer a {
+      color: #8ec4c4;
+      text-decoration: none;
+    }
+    .footer a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <h1>CamControls UI</h1>
+  <div class="preview">
+    <img id="stream" src="/stream" alt="Webcam preview" />
+  </div>
+  <div class="row">
+    <label for="camera">Camera</label>
+    <select id="camera"></select>
+  </div>
+
+  <section id="serial-section">
+    <h2>Serial (hardware)</h2>
+    <p class="serial-hint" id="serial-hint">
+      Used for real hardware modes. Choose ports here before switching, or while a real mode is active.
+    </p>
+    <div class="row">
+      <label for="serial-right">Right hand</label>
+      <select id="serial-right"></select>
+    </div>
+    <div class="row">
+      <button type="button" id="serial-scan-btn" class="secondary">Scan servos</button>
+    </div>
+    <div id="serial-probe-right" class="serial-probe">Select a port, then scan once. IDs 1–8 = right hand; 11–18 = left on a shared bus.</div>
+    <div class="row" id="serial-left-row" hidden>
+      <label for="serial-left">Left hand</label>
+      <select id="serial-left"></select>
+    </div>
+    <div id="serial-probe-left" class="serial-probe" hidden></div>
+  </section>
+
+  <section id="pipeline-section">
+    <h2>Pipeline</h2>
+    <p class="section-sub">Webcam tracking + IK. Restarts the pipeline (~10s). Real modes energize servos.</p>
+    <div class="buttons" id="mode-buttons">
+      <button type="button" data-mode="simu" id="mode-simu">Simulation — both hands</button>
+      <button type="button" data-mode="real" id="mode-real" class="secondary">Real hardware — right hand</button>
+      <button type="button" data-mode="real-2hands" id="mode-real-2hands" class="secondary">Real hardware — both hands</button>
+    </div>
+  </section>
+
+  <section id="mujoco-section">
+    <h2>MuJoCo 3D view</h2>
+    <p class="section-sub">Opens a viewer window. Does not restart the pipeline; tracking keeps running.</p>
+    <div class="buttons" id="mujoco-buttons">
+      <button id="launch-right" type="button">Right hand</button>
+      <button id="launch-left" type="button" class="secondary">Left hand</button>
+      <button id="launch-both" type="button" class="secondary">Both hands</button>
+    </div>
+  </section>
+
+  <section id="shutdown-section">
+    <button type="button" id="shutdown-btn" class="danger">Shutdown</button>
+    <p class="section-sub">Stops the pipeline and exits <code>uv run launch</code> in the terminal (~few seconds).</p>
+  </section>
+
+  <p class="status" id="status"></p>
+  <p class="hint">
+    Start with <code>uv run launch</code> from the <code>CamControls_UI</code> folder. Webcam tracking runs as soon as the pipeline starts.
+  </p>
+  <ul class="hint">
+    <li><strong>Pipeline</strong> — simulation vs real hardware (restarts ~10s). <span class="warn">Real modes enable motor torque.</span></li>
+    <li><strong>MuJoCo 3D view</strong> — optional viewer windows only; left/both require a pipeline that includes the left simulation node.</li>
+    <li><strong>Serial</strong> — USB port for servos; scan while in simulation mode.</li>
+  </ul>
+  <p class="footer">
+    Built by <a href="https://gonzalobuilds.com/" target="_blank" rel="noopener noreferrer">Gonzalo Graham</a>
+  </p>
+  <script>
+    const statusEl = document.getElementById("status");
+    const streamImg = document.getElementById("stream");
+    const cameraSelect = document.getElementById("camera");
+    const serialSection = document.getElementById("serial-section");
+    const serialHint = document.getElementById("serial-hint");
+    const serialRight = document.getElementById("serial-right");
+    const serialLeft = document.getElementById("serial-left");
+    const serialLeftRow = document.getElementById("serial-left-row");
+    const serialProbeRight = document.getElementById("serial-probe-right");
+    const serialProbeLeft = document.getElementById("serial-probe-left");
+    const serialScanBtn = document.getElementById("serial-scan-btn");
+    let probeDebounce = null;
+    const launchRight = document.getElementById("launch-right");
+    const launchLeft = document.getElementById("launch-left");
+    const launchBoth = document.getElementById("launch-both");
+    const modeButtons = document.querySelectorAll("#mode-buttons button[data-mode]");
+
+    const MODE_LABELS = {
+      simu: "Simulation — both hands",
+      real: "Real hardware — right hand",
+      "real-2hands": "Real hardware — both hands",
+    };
+
+    function hasLeftSimNode(mode) {
+      return mode === "simu" || mode === "real-2hands";
+    }
+
+    function setStatus(msg) {
+      statusEl.textContent = msg;
+    }
+
+    function refreshStream() {
+      streamImg.src = `/stream?t=${Date.now()}`;
+    }
+
+    function updateModeButtons(activeMode) {
+      modeButtons.forEach((btn) => {
+        const isActive = btn.dataset.mode === activeMode;
+        btn.disabled = isActive;
+        btn.classList.toggle("active", isActive);
+        btn.classList.toggle("secondary", !isActive);
+      });
+
+      serialSection.classList.toggle("section-muted", activeMode === "simu");
+
+      serialLeftRow.hidden = activeMode !== "real-2hands";
+      if (serialProbeLeft.hidden === false && activeMode !== "real-2hands") {
+        serialProbeLeft.hidden = true;
+      }
+
+      const leftMujocoOk = hasLeftSimNode(activeMode);
+      launchLeft.disabled = !leftMujocoOk;
+      launchBoth.disabled = !leftMujocoOk;
+      launchLeft.title = leftMujocoOk
+        ? ""
+        : "Left simulation not in this pipeline (use Simulation or Real — both hands)";
+      launchBoth.title = launchLeft.title;
+
+      if (activeMode === "real") {
+        serialHint.textContent =
+          "USB port for your right hand (motor IDs 1–8). Changing port restarts the pipeline (~10s).";
+      } else if (activeMode === "real-2hands") {
+        serialHint.textContent =
+          "Default: one USB bus for both hands (2hands.toml). Optional second port if each hand has its own adapter.";
+      } else {
+        serialHint.textContent =
+          "Configure ports here; they apply when you switch to a real hardware pipeline mode.";
+      }
+      if (activeMode && MODE_LABELS[activeMode]) {
+        setStatus(`Pipeline: ${MODE_LABELS[activeMode]}`);
+      }
+    }
+
+    function fillSerialSelect(selectEl, ports, selectedPath, extraOption) {
+      selectEl.innerHTML = "";
+      if (extraOption) {
+        const opt = document.createElement("option");
+        opt.value = extraOption.value;
+        opt.textContent = extraOption.label;
+        selectEl.appendChild(opt);
+      }
+      ports.forEach((port) => {
+        const opt = document.createElement("option");
+        opt.value = port.path;
+        opt.textContent = port.label;
+        selectEl.appendChild(opt);
+      });
+      if (selectedPath) {
+        let found = false;
+        for (const opt of selectEl.options) {
+          if (opt.value === selectedPath) {
+            opt.selected = true;
+            found = true;
+            break;
+          }
+        }
+        if (!found && selectedPath) {
+          const opt = document.createElement("option");
+          opt.value = selectedPath;
+          opt.textContent = `${selectedPath} (saved)`;
+          opt.selected = true;
+          selectEl.appendChild(opt);
+        }
+      }
+    }
+
+    function formatProbeReport(data) {
+      if (data.blocked) {
+        return { text: data.error, className: "warn" };
+      }
+      if (data.error && !data.ok) {
+        return { text: `Scan failed: ${data.error}`, className: "err" };
+      }
+      const lines = [];
+      const port = data.port || {};
+      if (port.description || port.manufacturer) {
+        const parts = [port.description, port.manufacturer, port.product].filter(Boolean);
+        lines.push(`Adapter: ${parts.join(" · ")}`);
+      }
+      if (port.usb_serial) {
+        lines.push(`USB serial: ${port.usb_serial}`);
+      }
+      if (port.vid && port.pid) {
+        lines.push(`USB IDs: ${port.vid} / ${port.pid}`);
+      }
+      lines.push(`Baud: ${data.baudrate || 1000000} · Responding IDs: ${(data.found_ids || []).join(", ") || "none"}`);
+
+      const responding = (data.motors || []).filter((m) => m.responding);
+      for (const m of responding) {
+        const bits = [`#${m.id}`];
+        if (m.model_number != null) bits.push(`model ${m.model_number}`);
+        if (m.present_voltage_v != null) bits.push(`${m.present_voltage_v} V`);
+        if (m.temperature_c != null) bits.push(`${m.temperature_c} °C`);
+        if (m.torque_enabled != null) bits.push(m.torque_enabled ? "torque on" : "torque off");
+        lines.push(bits.join(" · "));
+      }
+
+      const sug = data.suggestion;
+      if (sug) {
+        lines.push(`Layout: ${sug.label}${sug.config ? ` (${sug.config})` : ""}`);
+        if (sug.detail) lines.push(sug.detail);
+      }
+
+      const profiles = data.profiles || {};
+      for (const [name, p] of Object.entries(profiles)) {
+        if (p.complete) continue;
+        if (p.missing_ids && p.missing_ids.length) {
+          const label = name === "right_hand" ? "Right config" : "2-hand config";
+          lines.push(`${label} missing IDs: ${p.missing_ids.join(", ")}`);
+        }
+      }
+
+      const cls = (data.found_ids || []).length ? "ok" : "warn";
+      return { text: lines.join("\n"), className: cls };
+    }
+
+    async function probeSerialPort(path, panelEl) {
+      if (!path || !panelEl) return;
+      panelEl.hidden = false;
+      panelEl.className = "serial-probe";
+      panelEl.textContent = "Scanning servos on bus…";
+      try {
+        const res = await fetch(`/api/serial/probe?path=${encodeURIComponent(path)}`);
+        const data = await res.json();
+        const report = formatProbeReport(data);
+        panelEl.textContent = report.text;
+        panelEl.className = `serial-probe ${report.className}`;
+      } catch (e) {
+        panelEl.textContent = `Scan failed: ${e}`;
+        panelEl.className = "serial-probe err";
+      }
+    }
+
+    function runSerialProbe(immediate = false) {
+      const run = () => {
+        const right = serialRight.value;
+        if (right) probeSerialPort(right, serialProbeRight);
+        const left = serialLeft.value;
+        if (!serialLeftRow.hidden && left && left !== right) {
+          probeSerialPort(left, serialProbeLeft);
+        } else {
+          serialProbeLeft.hidden = true;
+        }
+      };
+      if (immediate) {
+        if (probeDebounce) clearTimeout(probeDebounce);
+        run();
+        return;
+      }
+      if (probeDebounce) clearTimeout(probeDebounce);
+      probeDebounce = setTimeout(run, 400);
+    }
+
+    async function loadSerialPorts() {
+      const [portsRes, serialRes] = await Promise.all([
+        fetch("/api/serial-ports"),
+        fetch("/api/serial"),
+      ]);
+      const ports = portsRes.ok ? await portsRes.json() : [];
+      const serial = serialRes.ok ? await serialRes.json() : {};
+      fillSerialSelect(serialRight, ports, serial.right, null);
+      fillSerialSelect(serialLeft, ports, serial.left, {
+        value: "",
+        label: "Same USB as right (shared bus)",
+      });
+      updateModeButtons(serial.mode || "simu");
+    }
+
+    async function applySerialSelection() {
+      const right = serialRight.value;
+      if (!right) {
+        setStatus("Select a serial port for the right hand.");
+        return;
+      }
+      const left =
+        serialLeftRow.hidden || !serialLeft.value ? null : serialLeft.value;
+      setStatus("Updating serial port — restarting pipeline (~10s)…");
+      const res = await fetch("/api/serial", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ right, left: left || null }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setStatus(data.detail || "Failed to set serial port");
+        return;
+      }
+      if (data.restart) {
+        setStatus("Restarting for new serial port…");
+        setTimeout(() => {
+          refreshStream();
+          loadCameras();
+          loadSerialPorts();
+          loadCurrentMode();
+          runSerialProbe(true);
+        }, 12000);
+      } else {
+        setStatus(data.message || "Serial port saved.");
+        loadCurrentMode();
+        runSerialProbe(true);
+      }
+    }
+
+    async function loadCurrentMode() {
+      try {
+        const res = await fetch("/api/mode");
+        if (res.ok) {
+          const data = await res.json();
+          updateModeButtons(data.mode);
+        }
+      } catch (_) {
+        /* server may be restarting */
+      }
+    }
+
+    async function loadCameras() {
+      const [camRes, selRes] = await Promise.all([
+        fetch("/api/cameras"),
+        fetch("/api/camera"),
+      ]);
+      const cameras = camRes.ok ? await camRes.json() : [];
+      const saved = selRes.ok ? (await selRes.json()).index : 0;
+      cameraSelect.innerHTML = "";
+      cameras.forEach((cam) => {
+        const opt = document.createElement("option");
+        opt.value = cam.index;
+        opt.textContent = cam.label;
+        if (cam.index === saved) {
+          opt.selected = true;
+        }
+        cameraSelect.appendChild(opt);
+      });
+      if (cameras.length === 0) {
+        const opt = document.createElement("option");
+        opt.textContent = "No cameras found";
+        cameraSelect.appendChild(opt);
+      } else if (![...cameraSelect.options].some((o) => o.selected)) {
+        const opt = document.createElement("option");
+        opt.value = saved;
+        opt.textContent = `Camera ${saved} (saved)`;
+        opt.selected = true;
+        cameraSelect.appendChild(opt);
+      }
+    }
+
+    serialRight.addEventListener("change", () => applySerialSelection());
+    serialLeft.addEventListener("change", () => applySerialSelection());
+    serialScanBtn.addEventListener("click", () => runSerialProbe(true));
+
+    cameraSelect.addEventListener("change", async () => {
+      const index = parseInt(cameraSelect.value, 10);
+      if (Number.isNaN(index)) return;
+      setStatus("Switching camera…");
+      const res = await fetch("/api/camera", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ index }),
+      });
+      setStatus(res.ok ? `Using camera ${index}` : "Failed to switch camera");
+      if (res.ok) loadCurrentMode();
+    });
+
+    async function switchMode(mode) {
+      setStatus("Switching pipeline — restarting (~10s)…");
+      modeButtons.forEach((b) => { b.disabled = true; });
+      const res = await fetch("/api/mode", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mode }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setStatus(data.detail || "Failed to switch mode");
+        await loadCurrentMode();
+        return;
+      }
+      if (data.restart) {
+        setStatus("Restarting… preview may freeze briefly.");
+        setTimeout(() => {
+          refreshStream();
+          loadCameras();
+          loadCurrentMode();
+        }, 12000);
+      } else {
+        updateModeButtons(mode);
+      }
+    }
+
+    modeButtons.forEach((btn) => {
+      btn.addEventListener("click", () => switchMode(btn.dataset.mode));
+    });
+
+    async function launch(path) {
+      setStatus("Opening MuJoCo…");
+      const res = await fetch(path, { method: "POST" });
+      setStatus(res.ok ? "3D view requested" : "Could not open 3D view");
+      if (res.ok) loadCurrentMode();
+    }
+
+    launchRight.addEventListener("click", () => launch("/api/launch/right"));
+    launchLeft.addEventListener("click", () => launch("/api/launch/left"));
+    launchBoth.addEventListener("click", () => launch("/api/launch/both"));
+
+    document.getElementById("shutdown-btn").addEventListener("click", async () => {
+      if (!confirm("Stop the demo and exit uv run launch in the terminal?")) {
+        return;
+      }
+      setStatus("Shutting down…");
+      try {
+        const res = await fetch("/api/shutdown", { method: "POST" });
+        if (res.ok) {
+          setStatus("Shutdown requested. You can close this tab when the preview stops.");
+        } else {
+          const data = await res.json().catch(() => ({}));
+          setStatus(data.detail || "Shutdown request failed");
+        }
+      } catch (_) {
+        setStatus("Shutdown sent (connection lost — demo may already be stopping).");
+      }
+    });
+
+    refreshStream();
+    loadCameras();
+    loadSerialPorts().then(() => runSerialProbe(true));
+    loadCurrentMode();
+    setInterval(loadCurrentMode, 5000);
+    setInterval(loadSerialPorts, 8000);
+  </script>
+</body>
+</html>
